@@ -1,0 +1,6 @@
+2025-07-31 13:23:00,104 - tensorflow - WARNING - From C:\Users\Y sai rohith\AppData\Roaming\Python\Python313\site-packages\keras\src\backend\common\global_state.py:82: The name tf.reset_default_graph is deprecated. Please use tf.compat.v1.reset_default_graph instead.
+
+2025-07-31 13:32:19,575 - src.utils.helpers - ERROR - Spotify credentials not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET
+2025-07-31 13:37:54,912 - src.utils.helpers - ERROR - Spotify credentials not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET
+2025-07-31 13:40:29,410 - src.utils.helpers - ERROR - Spotify credentials not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET
+2025-07-31 13:47:03,040 - src.utils.helpers - ERROR - Spotify credentials not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET
