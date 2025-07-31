@@ -179,3 +179,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **Ready to discover music beyond the algorithm? Start exploring with our bias-resistant recommendation system!** 🎵 "# Music-Recommendation-app" 
+"# Music-Recommendation-app" 
