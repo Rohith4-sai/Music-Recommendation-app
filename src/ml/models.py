@@ -12,12 +12,28 @@ from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-import torch
-import torch.nn as nn
-import torch.optim as optim
+
+# Try to import TensorFlow, but handle gracefully if not available
+try:
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    logger = logging.getLogger(__name__)
+    logger.warning("TensorFlow not available. Some features will be disabled.")
+    TENSORFLOW_AVAILABLE = False
+
+# Try to import PyTorch, but handle gracefully if not available
+try:
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    TORCH_AVAILABLE = True
+except ImportError:
+    logger = logging.getLogger(__name__)
+    logger.warning("PyTorch not available. Some features will be disabled.")
+    TORCH_AVAILABLE = False
 
 from ..utils.config import config
 from ..utils.helpers import save_data, load_data
@@ -56,8 +72,11 @@ class HybridRecommendationModel:
             # Train content-based model
             self.content_model.train(features, track_ids, ratings)
             
-            # Train neural model
-            self.neural_model.train(features, track_ids, ratings)
+            # Train neural model if TensorFlow is available
+            if TENSORFLOW_AVAILABLE:
+                self.neural_model.train(features, track_ids, ratings)
+            else:
+                logger.warning("TensorFlow not available. Neural model will not be trained.")
             
             # Fit scaler and PCA
             self.scaler.fit(features)
@@ -80,7 +99,12 @@ class HybridRecommendationModel:
             # Get predictions from each model
             collab_scores = self.collaborative_model.predict(user_features, candidate_tracks)
             content_scores = self.content_model.predict(user_features, candidate_tracks, context)
-            neural_scores = self.neural_model.predict(user_features, candidate_tracks, context)
+            
+            # Get neural scores if TensorFlow is available
+            if TENSORFLOW_AVAILABLE:
+                neural_scores = self.neural_model.predict(user_features, candidate_tracks, context)
+            else:
+                neural_scores = [0.5] * len(candidate_tracks)
             
             # Combine predictions with weights
             combined_scores = []
@@ -304,6 +328,10 @@ class NeuralCollaborativeFilteringModel:
     
     def train(self, features: np.ndarray, track_ids: np.ndarray, ratings: np.ndarray):
         """Train the neural collaborative filtering model."""
+        if not TENSORFLOW_AVAILABLE:
+            logger.warning("TensorFlow not available. Neural model will not be trained.")
+            return
+            
         try:
             # Create neural network
             self.model = self._build_model(features.shape[1])
@@ -327,8 +355,10 @@ class NeuralCollaborativeFilteringModel:
         except Exception as e:
             logger.error(f"Error training neural model: {e}")
     
-    def _build_model(self, input_dim: int) -> keras.Model:
+    def _build_model(self, input_dim: int):
         """Build the neural network architecture."""
+        if not TENSORFLOW_AVAILABLE:
+            return None
         model = keras.Sequential([
             layers.Dense(config.HIDDEN_LAYERS[0], activation='relu', input_shape=(input_dim,)),
             layers.Dropout(0.3),
@@ -350,6 +380,10 @@ class NeuralCollaborativeFilteringModel:
     def predict(self, user_features: np.ndarray, candidate_tracks: List[Dict], 
                 context: Dict[str, Any] = None) -> List[float]:
         """Generate neural model predictions."""
+        if not TENSORFLOW_AVAILABLE:
+            logger.warning("TensorFlow not available. Using default neural model predictions.")
+            return [0.5] * len(candidate_tracks)
+            
         if not self.is_trained or self.model is None:
             return [0.5] * len(candidate_tracks)
         
@@ -465,4 +499,4 @@ class ExplorationExploitationModel:
     
     def get_exploration_rate(self) -> float:
         """Get current exploration rate."""
-        return self.exploration_rate 
+        return self.exploration_rate
